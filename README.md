@@ -18,6 +18,9 @@ It is designed as a document-analytics demo for specialty trade preconstruction 
 - Extraction quality profile for OCR handoff signals
 - Optional OCR fallback for scanned PDFs via OCR.Space
 
+## Demo Live
+https://ai-construction-bid-analyzer.netlify.app/
+
 ## Project Structure
 
 ```txt
@@ -164,6 +167,6 @@ Then redeploy Netlify.
 
 ## Demo Notes
 
-For the JENGAI interview/demo flow, use [DEMO_TALK_TRACK.md](./DEMO_TALK_TRACK.md) to connect the current implementation to the role's priorities around Python document analytics, Angular integration, LLM orchestration, and production-minded pipeline design.
+Use [DEMO_TALK_TRACK.md](./DEMO_TALK_TRACK.md) to connect the current implementation to the role's priorities around Python document analytics, Angular integration, LLM orchestration, and production-minded pipeline design.
 
 [RCA_STORIES_LIVE_SYSTEMS.md](./RCA_STORIES_LIVE_SYSTEMS.md).
