@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+  publish = "dist/ai-construction-bid-analyzer-frontend/browser"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

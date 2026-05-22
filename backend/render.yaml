@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ai-construction-bid-analyzer-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-4.1-nano
+      - key: FRONTEND_ORIGIN
+        value: https://your-netlify-site.netlify.app

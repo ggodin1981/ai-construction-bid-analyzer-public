@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  color: #111827;
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.12), transparent 22%),
+    radial-gradient(circle at right center, rgba(22, 163, 74, 0.08), transparent 26%),
+    linear-gradient(180deg, #f6f4eb, #eef2ef 42%, #f7f6f2 100%);
+}
+
+h1,
+h2,
+h3,
+strong {
+  font-family: 'Space Grotesk', 'Manrope', ui-sans-serif, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}

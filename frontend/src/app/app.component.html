@@ -1,0 +1,349 @@
+<main class="page-shell">
+  <section class="hero">
+    <div class="hero-copy-block">
+      <p class="eyebrow">Preconstruction qualification workspace</p>
+      <h1>Bid Qualification Workspace</h1>
+      <p class="hero-copy">
+        Upload a bid package or scope PDF to generate structured bid intelligence, qualify the opportunity, and support estimator review before pricing is released.
+      </p>
+      <div class="signal-grid">
+        <article class="signal-card" *ngFor="let signal of operationalSignals">
+          <span>{{ signal.label }}</span>
+          <strong>{{ signal.value }}</strong>
+        </article>
+      </div>
+      <div class="hero-actions">
+        <label class="file-picker">
+          <input type="file" accept="application/pdf" (change)="onFileSelected($event)" />
+          {{ selectedFile?.name || 'Choose bid PDF' }}
+        </label>
+        <button (click)="analyzeDocument()" [disabled]="loading">
+          {{ loading ? 'Processing Package...' : 'Run Review' }}
+        </button>
+      </div>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </div>
+    <aside class="hero-card hero-status-card">
+      <div class="status-pill">Operations Snapshot</div>
+      <strong>Pre-bid triage in one pass</strong>
+      <p>Use the workspace to centralize qualification, scope capture, exclusions review, and bid decision support before estimators commit margin.</p>
+      <dl class="hero-metrics">
+        <div>
+          <dt>Primary Outcome</dt>
+          <dd>Faster go/no-go review</dd>
+        </div>
+        <div>
+          <dt>Review Lens</dt>
+          <dd>Scope, schedule, exposure</dd>
+        </div>
+        <div>
+          <dt>Output</dt>
+          <dd>Actionable bid summary</dd>
+        </div>
+      </dl>
+    </aside>
+  </section>
+
+  <section class="empty-state" *ngIf="!analysis && !loading">
+    <div>
+      <p class="section-label">Review Workflow</p>
+      <h2>Built for active estimating teams, not demo walkthroughs</h2>
+      <p>Start with a live bid package, generate a qualification brief, then interrogate the document for scope gaps, schedule constraints, commercial assumptions, and escalation triggers.</p>
+    </div>
+    <div class="checklist">
+      <div class="checklist-item" *ngFor="let item of reviewChecklist">
+        <span></span>
+        <p>{{ item }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="document-workbench-card" *ngIf="selectedFile && !loading">
+    <div class="document-import-panel">
+      <div>
+        <p class="section-label">Imported PDF</p>
+        <h2>{{ selectedFile.name }}</h2>
+        <p>
+          The uploaded package is ready for review. Preview the source file, run analysis, and export a print-ready estimator packet once the result is generated.
+        </p>
+      </div>
+      <div class="document-import-grid">
+        <div class="document-import-item">
+          <span>File Type</span>
+          <strong>{{ selectedFile.type || 'application/pdf' }}</strong>
+        </div>
+        <div class="document-import-item">
+          <span>File Size</span>
+          <strong>{{ selectedFileSizeLabel }}</strong>
+        </div>
+      </div>
+      <div class="document-import-actions">
+        <button type="button" class="secondary-button" (click)="downloadImportedPdf()">Download Imported PDF</button>
+        <button type="button" (click)="analyzeDocument()" [disabled]="loading">Analyze Imported PDF</button>
+      </div>
+    </div>
+
+    <div class="pdf-preview-panel" *ngIf="pdfPreviewUrl">
+      <div class="card-header"><p>PDF Preview</p></div>
+      <iframe [src]="pdfPreviewUrl" title="Imported PDF preview"></iframe>
+    </div>
+  </section>
+
+  <section class="plan-analyzer-card" *ngIf="!loading">
+    <div>
+      <p class="section-label">AI Plan Analyzer</p>
+      <h2>Turn plan and specification text into a usable preconstruction brief</h2>
+      <p>
+        The current analyzer reviews selectable plan/spec text from uploaded PDFs, structures bid-critical data, and surfaces evidence-backed scope and risk findings for faster qualification.
+      </p>
+    </div>
+    <div class="plan-capabilities">
+      <div class="plan-capability" *ngFor="let capability of planAnalyzerCapabilities">
+        {{ capability }}
+      </div>
+    </div>
+  </section>
+
+  <section class="engineering-fit-card" *ngIf="!loading">
+    <div>
+      <p class="section-label">Engineering Fit</p>
+      <h2>Built to demonstrate document analytics depth, not just a UI demo</h2>
+      <p>
+        The workspace is intentionally split into a Python analytics core and an Angular operator console so the review logic can grow into queue-based, OCR-aware, platform-integrated document processing.
+      </p>
+    </div>
+    <div class="engineering-fit-grid">
+      <article class="engineering-fit-item" *ngFor="let item of engineeringFitSignals">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.detail }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="loading-card" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Reading package, extracting key commercial signals, and assembling the review brief...</p>
+  </section>
+
+  <section class="dashboard" *ngIf="analysis">
+    <div class="decision-banner" [ngClass]="recommendationClass">
+      <div>
+        <p class="decision-label">Bid Decision</p>
+        <h2>{{ analysis.bidRecommendation }}</h2>
+      </div>
+      <p>{{ analysis.recommendationRationale }}</p>
+    </div>
+
+    <div class="summary-card card">
+      <div class="card-header">
+        <p>Executive Summary</p>
+        <span>{{ analysis.aiProvider }}</span>
+      </div>
+      <h2>{{ analysis.summary }}</h2>
+      <p class="review-basis">{{ analysis.reviewBasis }}</p>
+      <p class="analysis-timestamp" *ngIf="generatedAtLabel">Generated {{ generatedAtLabel }}</p>
+    </div>
+
+    <div class="score-card card" [ngClass]="scoreClass">
+      <p>Bid Readiness</p>
+      <strong>{{ analysis.readinessScore }}%</strong>
+      <span>{{ analysis.readinessLabel }}</span>
+      <small>{{ scoreTone }}</small>
+    </div>
+
+    <div class="card recommendation-card">
+      <div class="card-header"><p>Bid Decision</p></div>
+      <div class="recommendation-chip" [ngClass]="recommendationClass">{{ analysis.bidRecommendation }}</div>
+      <p class="recommendation-rationale">{{ analysis.recommendationRationale }}</p>
+    </div>
+
+    <div class="card export-card">
+      <div class="card-header"><p>Review Packet</p></div>
+      <p class="export-copy">
+        Export the current document analysis as a print-friendly review copy for estimator markup, discussion, or proposal handoff.
+      </p>
+      <div class="export-actions">
+        <button type="button" (click)="printReviewPacket()">Print Review Copy</button>
+        <button type="button" class="secondary-button" (click)="downloadReviewPacket()">Download HTML Packet</button>
+        <button type="button" class="ghost-button" (click)="downloadAnalysisJson()">Download JSON</button>
+      </div>
+    </div>
+
+    <div class="card flags-card" *ngIf="analysis.reviewFlags?.length">
+      <div class="card-header"><p>Review Flags</p></div>
+      <div class="flag-list">
+        <span class="flag-item" *ngFor="let flag of analysis.reviewFlags">{{ flag }}</span>
+      </div>
+    </div>
+
+    <div class="card bid-info">
+      <div class="card-header"><p>Bid Profile</p></div>
+      <dl>
+        <div><dt>Project</dt><dd>{{ analysis.bidInfo.projectName }}</dd></div>
+        <div><dt>Trade / Scope</dt><dd>{{ analysis.bidInfo.tradeScope }}</dd></div>
+        <div><dt>Location</dt><dd>{{ analysis.bidInfo.location }}</dd></div>
+        <div><dt>Deadline</dt><dd>{{ analysis.bidInfo.deadline }}</dd></div>
+        <div><dt>Materials</dt><dd>{{ analysis.bidInfo.materials }}</dd></div>
+        <div><dt>Exclusions</dt><dd>{{ analysis.bidInfo.exclusions }}</dd></div>
+      </dl>
+    </div>
+
+    <div class="card analyzer-card">
+      <div class="card-header"><p>AI Plan Analyzer</p></div>
+      <p class="analyzer-copy">
+        Analyzer findings are grounded in extracted PDF text and the evidence captured below. Use this pass to qualify the opportunity, identify scope gaps, and prepare clarifications before pricing release.
+      </p>
+      <div class="analyzer-grid">
+        <div>
+          <span>Scope Signals</span>
+          <strong>{{ analysis.bidInfo.tradeScope }}</strong>
+        </div>
+        <div>
+          <span>Commercial Exclusions</span>
+          <strong>{{ analysis.bidInfo.exclusions }}</strong>
+        </div>
+        <div>
+          <span>Schedule Trigger</span>
+          <strong>{{ analysis.bidInfo.deadline }}</strong>
+        </div>
+        <div>
+          <span>Evidence Count</span>
+          <strong>{{ analysis.sourceEvidence.length || 0 }} findings captured</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card document-profile-card" *ngIf="analysis.documentProfile">
+      <div class="card-header"><p>Document Analytics Profile</p></div>
+      <div class="document-profile-grid">
+        <div>
+          <span>Detected Type</span>
+          <strong>{{ analysis.documentProfile.detectedDocumentType }}</strong>
+        </div>
+        <div>
+          <span>Extraction Mode</span>
+          <strong>{{ analysis.documentProfile.extractionMode }}</strong>
+        </div>
+        <div>
+          <span>Pages Reviewed</span>
+          <strong>{{ analysis.documentProfile.pageCount }}</strong>
+        </div>
+        <div>
+          <span>Characters Extracted</span>
+          <strong>{{ analysis.documentProfile.extractedCharacters }}</strong>
+        </div>
+        <div>
+          <span>Low-Text Pages</span>
+          <strong>{{ analysis.documentProfile.lowTextPages }}</strong>
+        </div>
+        <div>
+          <span>Blank Pages</span>
+          <strong>{{ analysis.documentProfile.blankPages }}</strong>
+        </div>
+        <div>
+          <span>OCR Status</span>
+          <strong>{{ analysis.documentProfile.ocrStatus }}</strong>
+        </div>
+        <div>
+          <span>OCR Engine</span>
+          <strong>{{ analysis.documentProfile.ocrEngine }}</strong>
+        </div>
+        <div>
+          <span>CV Pipeline</span>
+          <strong>{{ analysis.documentProfile.cvPipelineStatus }}</strong>
+        </div>
+        <div>
+          <span>Visual Classification</span>
+          <strong>{{ analysis.documentProfile.cvVisualClassification }}</strong>
+        </div>
+        <div>
+          <span>Average Skew</span>
+          <strong>{{ analysis.documentProfile.cvAverageSkewAngle }}&deg;</strong>
+        </div>
+        <div>
+          <span>Edge Density</span>
+          <strong>{{ analysis.documentProfile.cvAverageEdgeDensity }}</strong>
+        </div>
+        <div>
+          <span>Ink Ratio</span>
+          <strong>{{ analysis.documentProfile.cvAverageInkRatio }}</strong>
+        </div>
+      </div>
+      <p class="document-profile-note">{{ analysis.documentProfile.ocrRecommendation }}</p>
+      <div class="profile-observations" *ngIf="analysis.documentProfile.pipelineObservations?.length">
+        <div class="profile-observation" *ngFor="let observation of analysis.documentProfile.pipelineObservations">
+          {{ observation }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card risks">
+      <div class="card-header"><p>Priority Risk Register</p></div>
+      <ul>
+        <li *ngFor="let risk of analysis.riskItems">{{ risk }}</li>
+      </ul>
+    </div>
+
+    <div class="card actions" *ngIf="analysis.recommendedActions?.length">
+      <div class="card-header"><p>Recommended Actions</p></div>
+      <ul>
+        <li *ngFor="let action of analysis.recommendedActions">{{ action }}</li>
+      </ul>
+    </div>
+
+    <div class="card clarifications-card" *ngIf="analysis.requiredClarifications?.length">
+      <div class="card-header"><p>Required Clarifications</p></div>
+      <ul>
+        <li *ngFor="let clarification of analysis.requiredClarifications">{{ clarification }}</li>
+      </ul>
+    </div>
+
+    <div class="card qualifications-card" *ngIf="analysis.commercialQualifications?.length">
+      <div class="card-header"><p>Commercial Qualifications</p></div>
+      <ul>
+        <li *ngFor="let qualification of analysis.commercialQualifications">{{ qualification }}</li>
+      </ul>
+    </div>
+
+    <div class="card memo-card" *ngIf="analysis.estimatorReviewMemo">
+      <div class="card-header"><p>Estimator Review Memo</p></div>
+      <p class="memo-copy">{{ analysis.estimatorReviewMemo }}</p>
+    </div>
+
+    <div class="card evidence-card" *ngIf="analysis.sourceEvidence?.length">
+      <div class="card-header"><p>Supporting Evidence</p></div>
+      <div class="evidence-list">
+        <div class="evidence-item" *ngFor="let evidence of analysis.sourceEvidence">
+          {{ evidence }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card qa-card">
+      <div class="card-header"><p>Document Interrogation</p></div>
+      <div class="question-pills">
+        <button class="question-pill" *ngFor="let preset of defaultQuestions" type="button" (click)="setQuestion(preset)">
+          {{ preset }}
+        </button>
+      </div>
+      <div class="ask-row">
+        <input [(ngModel)]="question" placeholder="Ask about exclusions, schedule pressure, scope ownership, or margin risk." (keyup.enter)="askQuestion()" />
+        <button (click)="askQuestion()" [disabled]="asking || !question.trim()">{{ asking ? 'Reviewing...' : 'Ask Document' }}</button>
+      </div>
+      <div class="answer" *ngIf="answer">
+        <div class="answer-header">
+          <strong>Analyst Response</strong>
+          <span class="answer-confidence">{{ answer.confidence }} Confidence</span>
+        </div>
+        <p>{{ answer.answer }}</p>
+        <div class="answer-evidence" *ngIf="answer.evidence.length">
+          <span>Supporting Evidence</span>
+          <ul>
+            <li *ngFor="let item of answer.evidence">{{ item }}</li>
+          </ul>
+        </div>
+        <p class="answer-limitations">{{ answer.limitations }}</p>
+      </div>
+    </div>
+  </section>
+</main>
