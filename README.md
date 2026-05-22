@@ -21,6 +21,16 @@ It is designed as a document-analytics demo for specialty trade preconstruction 
 ## Demo Live
 https://ai-construction-bid-analyzer.netlify.app/
 
+
+## UI Preview
+ 
+![img1](sample-documents/img1.png)
+![img2](sample-documents/img2.png)
+![img3](sample-documents/img3.png)
+![img4](sample-documents/img4.png)
+![img5](sample-documents/img5.png)
+
+
 ## Project Structure
 
 ```txt
